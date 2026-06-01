@@ -1,0 +1,7 @@
+# pixi environments
+.pixi/*
+!.pixi/config.toml
+LibriSpeech
+.venv
+__pycache__
+.ruff_cache
