@@ -248,7 +248,8 @@ class CPC_autoregressive_model(Module):
         # [batch_size, num_frames_encoding, num_features] where num_features is the size of the encoding for each
         # timestep produced by the encoder
         # --> with default values from torch.Size([8, 512, 128]) into torch.Size([8, 128, 512])
-        X.transpose_(1, 2)
+        X = X.transpose(1, 2)
+        # don't need it anymore, added before.
 
         if hidden == None:
             X, hidden = self.cpc_ar(X)
@@ -259,6 +260,7 @@ class CPC_autoregressive_model(Module):
         # --> with default values X.size() = torch.Size([8, 128, 256]) and hidden.size() = torch.Size([1, 8, 256])
 
         # We detach the hidden vector from the graph
+
         return X, hidden.detach()
 
 

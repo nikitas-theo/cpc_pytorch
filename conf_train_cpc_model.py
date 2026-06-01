@@ -8,7 +8,7 @@ The configuration file for train_cpc_model.py.
 """
 
 # The hyperparameters for our training and testing process
-max_epochs = 10000
+max_epochs = 1
 patience = 100
 dropout = 0.3
 batch_size = 8

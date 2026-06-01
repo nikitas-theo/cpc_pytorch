@@ -89,7 +89,7 @@ if __name__ == "__main__":
     with open(conf.name_of_log_textfile, "a") as f:
         f.write(f"Process on {device}\n\n")
 
-    # Initialize our models
+    # Initialize our modelsprint
     Encoder = CPC_encoder(**conf.encoder_params)
     AR_model = CPC_autoregressive_model(**conf.ar_model_params)
     W = CPC_postnet(**conf.w_params)
@@ -235,6 +235,8 @@ if __name__ == "__main__":
                 else:
                     C = AR_model(Z)
 
+                Z = Z.transpose(1, 2)
+
                 # We go through each timestep one at a time
                 for t in timesteps:
                     # The encodings of the future timesteps, i.e. z_{t+k} where k in [1, 2, ..., max_future_timestep]
@@ -248,6 +250,7 @@ if __name__ == "__main__":
                     # Each of the predicted future embeddings z_{t+k} where k in [1, 2, ..., max_future_timestep] (or k in
                     # future_predicted_timesteps if future_predicted_timesteps is a list) are computed using the post-net
                     predicted_future_Z = W(c_t)
+
 
                     # Compute the loss of our model
                     if batch_labels != []:
@@ -286,6 +289,8 @@ if __name__ == "__main__":
                         C, hidden = AR_model(Z, hidden)
                     else:
                         C = AR_model(Z)
+
+                    Z = Z.transpose(1, 2)
 
                     for t in timesteps:
                         Z_future_timesteps = Z[
@@ -404,7 +409,9 @@ if __name__ == "__main__":
                     C, hidden = AR_model(Z, hidden)
                 else:
                     C = AR_model(Z)
-
+                
+                Z = Z.transpose(1, 2)
+                
                 for t in timesteps:
                     Z_future_timesteps = Z[
                         :, (t + 1) : (t + max_future_timestep + 1), :

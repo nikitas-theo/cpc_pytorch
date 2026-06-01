@@ -6,14 +6,16 @@ The data loader for the audio CPC model.
 
 """
 
-import os
 import sys
+from pathlib import Path
 
 import librosa
 import numpy as np
 from torch import from_numpy
 from torch.utils.data import Dataset
 
+
+DEBUG = True
 
 class CPC_raw_audio_dataset(Dataset):
     """
@@ -60,22 +62,27 @@ class CPC_raw_audio_dataset(Dataset):
 
         self.audio_window_length = audio_window_length
 
+        file_dir = Path(file_dir)
+
         # Find out our WAV files in the given directory
         try:
-            filenames_wav = os.listdir(file_dir)
+            wav_file_names = list(file_dir.rglob("*.wav"))
         except FileNotFoundError:
-            sys.exit("Given .wav file directory " + file_dir + " does not exist!")
+            sys.exit("Given .wav file directory " + str(file_dir) + " does not exist!")
 
-        # Clean the list if there are other files than .wav files
-        wav_file_names = [
-            filename for filename in filenames_wav if filename.endswith(".wav")
-        ]
-        del filenames_wav
+        if len(wav_file_names) == 0:
+            sys.exit(
+                "There are no .wav files in the given directory "
+                + str(file_dir)
+                + " for creating the dataset!"
+            )
+        if DEBUG:
+            wav_file_names = wav_file_names[:100]
 
         # We only take into account the audio files that are longer than audio_window_length
         wav_files = []
         for file in wav_file_names:
-            x, fs = librosa.core.load(os.path.join(file_dir, file), sr=Fs)
+            x, fs = librosa.core.load(str(file), sr=Fs)
             if len(x) > audio_window_length:
                 wav_files.append(x)
 
@@ -166,20 +173,23 @@ class CPC_logmel_dataset(Dataset):
 
         # Find out our WAV files in the given directory
         try:
-            filenames_wav = os.listdir(file_dir)
+            wav_file_names = list(Path(file_dir).rglob("*.wav"))
         except FileNotFoundError:
             sys.exit("Given .wav file directory " + file_dir + " does not exist!")
 
-        # Clean the list if there are other files than .wav files
-        wav_file_names = [
-            filename for filename in filenames_wav if filename.endswith(".wav")
-        ]
-        del filenames_wav
+        if len(wav_file_names) == 0:
+            sys.exit(
+                "There are no .wav files in the given directory "
+                + file_dir
+                + " for creating the dataset!"
+            )
+        if DEBUG:
+            wav_file_names = wav_file_names[:100]
 
         # We only take into account the log-mels that are longer than num_logmel_frames
         logmels = []
         for file in wav_file_names:
-            x, fs = librosa.core.load(os.path.join(file_dir, file), sr=Fs)
+            x, fs = librosa.core.load(str(file), sr=Fs)
 
             # The number of FFT points for a window length of 30 ms and 10 ms shifts
             num_fft = int(0.03 * fs)
@@ -187,7 +197,7 @@ class CPC_logmel_dataset(Dataset):
 
             # Extract the log-mel spectrogram
             melspec = librosa.feature.melspectrogram(
-                x, sr=fs, n_fft=num_fft, hop_length=shift, n_mels=40
+                y=x, sr=fs, n_fft=num_fft, hop_length=shift, n_mels=40
             )
 
             logmel = librosa.core.power_to_db(melspec)

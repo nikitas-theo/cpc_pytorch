@@ -5,3 +5,4 @@ LibriSpeech
 .venv
 __pycache__
 .ruff_cache
+CPC_*.pt
